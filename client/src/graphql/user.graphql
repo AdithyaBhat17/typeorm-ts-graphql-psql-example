@@ -1,0 +1,30 @@
+query Users {
+  users {
+    id
+    fullname
+    email
+  }
+}
+
+query User($id: Float!) {
+  user(id: $id) {
+    id
+    fullname
+    email
+  }
+}
+
+mutation CreateUser($email: String!, $fullname: String!) {
+  createUser(email: $email, fullname: $fullname) {
+    user {
+      id
+      fullname
+      email
+    }
+    success
+  }
+}
+
+mutation RemoveUser($id: Float!) {
+  removeUser(id: $id)
+}
