@@ -3,18 +3,38 @@ import "./App.css";
 import {
   useUsersQuery,
   useCreateUserMutation,
-  UserQuery,
-  UserDocument,
   UsersDocument,
+  useRemoveUserMutation,
 } from "./generated/graphql";
 
 function App() {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
 
-  const { data, error } = useUsersQuery();
+  const { data, error } = useUsersQuery({ fetchPolicy: "network-only" });
 
   const [createUser] = useCreateUserMutation();
+
+  const [removeUser] = useRemoveUserMutation();
+
+  const onRemoveUser = (id: number) => {
+    removeUser({
+      variables: {
+        id,
+      },
+      update: (cache, { data }) => {
+        if (!data) return null;
+        //@ts-ignore
+        let { users } = cache.readQuery({ query: UsersDocument });
+        cache.writeQuery({
+          query: UsersDocument,
+          data: {
+            users: users.filter((user: any) => user.id !== id),
+          },
+        });
+      },
+    });
+  };
 
   const onSubmitUser = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,9 +45,12 @@ function App() {
       },
       update: (cache, { data }) => {
         if (!data) return null;
-        cache.writeData<UserQuery>({
+        //@ts-ignore
+        let { users } = cache.readQuery({ query: UsersDocument });
+        cache.writeQuery({
+          query: UsersDocument,
           data: {
-            user: data.createUser.user,
+            users: users.concat([data.createUser.user]),
           },
         });
       },
@@ -40,7 +63,7 @@ function App() {
     <div className="App">
       {error ? "Error" : null}
       {data?.users?.map((user) => (
-        <li key={user.id}>
+        <li key={user.id} onClick={() => onRemoveUser(user.id)}>
           {user.fullname} - {user.email}
         </li>
       ))}

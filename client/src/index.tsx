@@ -13,7 +13,7 @@ import {
 import { onError } from "apollo-link-error";
 import { ApolloProvider } from "@apollo/react-hooks";
 
-const cache = new InMemoryCache();
+const cache = new InMemoryCache({});
 
 const client = new ApolloClient({
   cache,
